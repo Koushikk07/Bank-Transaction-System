@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const emailService = require("../services/email.service");
+const tokenBlackListModel = require("../models/blacklist.model");
 
 /**
  * - user register controller
@@ -28,7 +29,7 @@ async function userRegisterController(req, res) {
     expiresIn: "3d",
   }); //secret higher the key more secure but high cumputational
 
-  res.cookie("token", token);
+  res.clearCookie("token");
 
   res.status(201).json({
     user: {
@@ -39,7 +40,9 @@ async function userRegisterController(req, res) {
     token,
   }); // api sending new resource by user , so 201
 
-  await emailService.sendRegistrationEmail(user.email, user.name);
+  await emailService
+    .sendRegistrationEmail(user.email, user.name)
+    .catch((err) => console.error("Registration email Failed : ", err));
 }
 /**
  * - user login controller
@@ -58,7 +61,7 @@ async function userLoginController(req, res) {
   const isValidPassword = await user.comparePassword(password);
   if (!isValidPassword) {
     return res.status(404).json({
-      message: "Passowrd is INVALID",
+      message: "Email or Passowrd is INVALID",
     });
   }
 
@@ -78,7 +81,25 @@ async function userLoginController(req, res) {
   });
 }
 
+async function userLogoutController(req, res) {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(200).json({
+      message: "User Logout successfully",
+    });
+  }
+
+  res.cookie("token", "");
+
+  await tokenBlackListModel.create({ token: token });
+  res.status(200).json({
+    message: "User logged out successfully",
+  });
+}
+
 module.exports = {
   userRegisterController,
   userLoginController,
+  userLogoutController,
 };
