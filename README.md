@@ -672,7 +672,7 @@ I built the base of this project by following a Backend Ledger tutorial, then ex
 
 ## Acknowledgements
 
-The project is based on the **Backend Ledger** tutorial by [Sheryians Coding School](https://www.youtube.com/@SheryiansCodingSchool) on YouTube. The core flow (ledger, idempotency, sessions, system user, email notifications) follows that tutorial; the fixes, deployment and documentation listed above are my own additions.
+The project is based on the **Backend Ledger** tutorial by [Sheryians Coding School](https://www.youtube.com/@sheryians) on YouTube. The core flow (ledger, idempotency, sessions, system user, email notifications) follows that tutorial; the fixes, deployment and documentation listed above are my own additions.
 
 ---
 
