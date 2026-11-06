@@ -60,17 +60,20 @@ The result is an auditable, safe-by-design backend that I built to learn how dat
 ## Features
 
 **Authentication and sessions**
+
 - Register and login with email and password (passwords hashed with bcrypt)
 - JWT authentication, accepted from either a cookie or an `Authorization: Bearer` header
 - Logout with a **token blacklist**; blacklisted tokens are rejected immediately and removed automatically after 3 days by a MongoDB TTL index
 - Role separation: a special **system user** (not creatable through the API) is the only one allowed to issue initial funds
 
 **Accounts**
+
 - A user can own multiple accounts (default currency `INR`)
 - Account status: `ACTIVE`, `FROZEN` or `CLOSED`; only `ACTIVE` accounts can send or receive
 - List your own accounts and check the balance of any account you own
 
 **Transactions**
+
 - User-to-user transfers with a full validation pipeline
 - Idempotent requests through a unique `idempotencyKey`
 - Atomic writes using a MongoDB session (all-or-nothing)
@@ -78,27 +81,29 @@ The result is an auditable, safe-by-design backend that I built to learn how dat
 - Ownership enforcement: you can only send money from your own accounts
 
 **Ledger**
+
 - Double-entry bookkeeping with `DEBIT` and `CREDIT` entries
 - Immutable ledger entries, enforced with `immutable` fields and Mongoose pre-hooks that block updates and deletes
 - Balance calculated on demand with an aggregation pipeline
 
 **Notifications**
+
 - Registration and transfer emails sent with Nodemailer (Gmail OAuth2)
 
 ---
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js |
-| Framework | Express 5 |
-| Database | MongoDB Atlas (replica set, required for transactions) |
-| ODM | Mongoose 9 |
-| Authentication | JSON Web Tokens, bcryptjs, cookie-parser |
-| Email | Nodemailer with Gmail OAuth2 |
-| API testing | Postman |
-| Hosting | Render (API) and MongoDB Atlas (database) |
+| Layer          | Technology                                             |
+| -------------- | ------------------------------------------------------ |
+| Runtime        | Node.js                                                |
+| Framework      | Express 5                                              |
+| Database       | MongoDB Atlas (replica set, required for transactions) |
+| ODM            | Mongoose 9                                             |
+| Authentication | JSON Web Tokens, bcryptjs, cookie-parser               |
+| Email          | Nodemailer with Gmail OAuth2                           |
+| API testing    | Postman                                                |
+| Hosting        | Render (API) and MongoDB Atlas (database)              |
 
 ---
 
@@ -168,13 +173,13 @@ erDiagram
     }
 ```
 
-| Collection | Purpose | Notable details |
-|---|---|---|
-| `users` | Registered people | Unique lowercase email, regex email validation, password minimum 6 characters, `password` and `systemUser` hidden from queries by default |
-| `accounts` | Bank accounts | Indexed on `user`, compound index on `user + status`, has the `getBalance()` method |
-| `transactions` | One record per transfer | Unique index on `idempotencyKey`, amount cannot be negative |
-| `ledgers` | Credit and debit entries | Every field immutable; update and delete operations throw an error |
-| `tokenblacklists` | Logged-out tokens | TTL index removes entries after 3 days |
+| Collection        | Purpose                  | Notable details                                                                                                                           |
+| ----------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`           | Registered people        | Unique lowercase email, regex email validation, password minimum 6 characters, `password` and `systemUser` hidden from queries by default |
+| `accounts`        | Bank accounts            | Indexed on `user`, compound index on `user + status`, has the `getBalance()` method                                                       |
+| `transactions`    | One record per transfer  | Unique index on `idempotencyKey`, amount cannot be negative                                                                               |
+| `ledgers`         | Credit and debit entries | Every field immutable; update and delete operations throw an error                                                                        |
+| `tokenblacklists` | Logged-out tokens        | TTL index removes entries after 3 days                                                                                                    |
 
 ---
 
@@ -268,17 +273,17 @@ Because entries are immutable and the balance is always recomputed, the balance 
 
 Protected routes need a valid token, sent either as the `token` cookie or as `Authorization: Bearer <token>`.
 
-| Method | Endpoint | Auth | Description | Success |
-|---|---|---|---|---|
-| GET | `/` | None | Health check | 200 |
-| POST | `/api/auth/register` | None | Create a user | 201 |
-| POST | `/api/auth/login` | None | Log in and receive a token | 200 |
-| POST | `/api/auth/logout` | User | Blacklist the current token | 200 |
-| POST | `/api/accounts` | User | Create an account for the logged-in user | 201 |
-| GET | `/api/accounts` | User | List the logged-in user's accounts | 200 |
-| GET | `/api/accounts/balance/:accountId` | User | Get the balance of an account you own | 200 |
-| POST | `/api/transactions` | User | Transfer money between accounts | 201 |
-| POST | `/api/transactions/system/initial-funds` | System user | Fund an account from the system account | 201 |
+| Method | Endpoint                                 | Auth        | Description                              | Success |
+| ------ | ---------------------------------------- | ----------- | ---------------------------------------- | ------- |
+| GET    | `/`                                      | None        | Health check                             | 200     |
+| POST   | `/api/auth/register`                     | None        | Create a user                            | 201     |
+| POST   | `/api/auth/login`                        | None        | Log in and receive a token               | 200     |
+| POST   | `/api/auth/logout`                       | User        | Blacklist the current token              | 200     |
+| POST   | `/api/accounts`                          | User        | Create an account for the logged-in user | 201     |
+| GET    | `/api/accounts`                          | User        | List the logged-in user's accounts       | 200     |
+| GET    | `/api/accounts/balance/:accountId`       | User        | Get the balance of an account you own    | 200     |
+| POST   | `/api/transactions`                      | User        | Transfer money between accounts          | 201     |
+| POST   | `/api/transactions/system/initial-funds` | System user | Fund an account from the system account  | 201     |
 
 ### Register
 
@@ -335,13 +340,13 @@ Returns `404 Account not found` if the account does not exist **or belongs to so
 }
 ```
 
-| Case | Response |
-|---|---|
-| Success | `201` with `Transaction completed successfully` and the transaction |
-| Same `idempotencyKey` sent again | `200` with `Transaction already processed` and the original transaction |
-| Balance too low | `400` with `Insufficient balance. Current balance is X. Requested amount is Y` |
-| `fromAccount` is not yours, or an account is invalid | Rejected with `Invalid fromAccount or toAccount` |
-| Missing or invalid token | `401` |
+| Case                                                 | Response                                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Success                                              | `201` with `Transaction completed successfully` and the transaction            |
+| Same `idempotencyKey` sent again                     | `200` with `Transaction already processed` and the original transaction        |
+| Balance too low                                      | `400` with `Insufficient balance. Current balance is X. Requested amount is Y` |
+| `fromAccount` is not yours, or an account is invalid | Rejected with `Invalid fromAccount or toAccount`                               |
+| Missing or invalid token                             | `401`                                                                          |
 
 ### Initial funds (system user only)
 
@@ -388,59 +393,59 @@ All screenshots are from the deployed API.
 ### Deployment
 
 ![Render dashboard showing the service live](docs/screenshots/render_dashboard.jpeg)
-*The service is live on Render, auto-deploying from the `main` branch.*
+_The service is live on Render, auto-deploying from the `main` branch._
 
 ### Funding an account (system user)
 
 ![Initial funds transaction](docs/screenshots/initial_fund_transfer_system.jpeg)
-*The system user credits an account with 25,000. The response shows the system account as the source.*
+_The system user credits an account with 25,000. The response shows the system account as the source._
 
 ![Balance after funding](docs/screenshots/balance.jpeg)
-*The derived balance for the funded account is 25,000.*
+_The derived balance for the funded account is 25,000._
 
 ### Money transfer
 
 ![Successful transfer](docs/screenshots/transaction.jpeg)
-*A successful transfer between two accounts.*
+_A successful transfer between two accounts._
 
 ![Transfer email](docs/screenshots/tranfer_mail.jpeg)
-*The confirmation email sent through Nodemailer (verified in a local run).*
+_The confirmation email sent through Nodemailer (verified in a local run)._
 
 ### Ledger in MongoDB
 
 ![DEBIT and CREDIT ledger entries](docs/screenshots/mongo_Debit_Credit.jpeg)
-*One transfer creates two ledger entries with the same `transaction` id: a `DEBIT` on the sender and a `CREDIT` on the receiver.*
+_One transfer creates two ledger entries with the same `transaction` id: a `DEBIT` on the sender and a `CREDIT` on the receiver._
 
 ### Safety checks
 
 ![Insufficient funds](docs/screenshots/insufficient_funds.jpeg)
-*Transfers above the available balance are rejected with the current balance in the message.*
+_Transfers above the available balance are rejected with the current balance in the message._
 
 ![Idempotent replay](docs/screenshots/idempotencyKey_crossCheck.jpeg)
-*Reusing an `idempotencyKey` returns the original transaction and moves no money.*
+_Reusing an `idempotencyKey` returns the original transaction and moves no money._
 
 ![Ownership rejection](docs/screenshots/validation_err_ownership_rejection.jpeg)
-*Trying to send from an account that does not belong to the logged-in user is rejected.*
+_Trying to send from an account that does not belong to the logged-in user is rejected._
 
 ![Account not found for another user's balance](docs/screenshots/validation_err_account_not_found.jpeg)
-*Checking the balance of an account you do not own returns `Account not found`.*
+_Checking the balance of an account you do not own returns `Account not found`._
 
 ---
 
 ## Security and validation
 
-| Concern | How it is handled |
-|---|---|
-| Password storage | Hashed with bcrypt (10 rounds) in a pre-save hook; the field is excluded from queries by default |
-| Authentication | JWT signed with `JWT_SECRET`, expires in 3 days |
-| Logout | Token stored in a blacklist collection; checked on every protected request; TTL index cleans it up |
-| Privilege separation | `systemUser` is immutable, hidden by default and cannot be set through registration; a separate middleware guards system routes |
-| Authorization | Transfers must originate from an account owned by the caller; balance lookups only return accounts you own |
-| Duplicate requests | Unique index on `idempotencyKey` plus an explicit lookup before processing |
-| Data integrity | Transaction record and both ledger entries are written in a single MongoDB session |
-| Ledger tampering | Immutable fields and pre-hooks on every update and delete operation |
-| Input validation | Required-field checks, email regex, password minimum length, schema-level `min: 0` on amounts, account status checks, balance checks |
-| Secrets | Loaded from environment variables; `.env` is git-ignored |
+| Concern              | How it is handled                                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Password storage     | Hashed with bcrypt (10 rounds) in a pre-save hook; the field is excluded from queries by default                                     |
+| Authentication       | JWT signed with `JWT_SECRET`, expires in 3 days                                                                                      |
+| Logout               | Token stored in a blacklist collection; checked on every protected request; TTL index cleans it up                                   |
+| Privilege separation | `systemUser` is immutable, hidden by default and cannot be set through registration; a separate middleware guards system routes      |
+| Authorization        | Transfers must originate from an account owned by the caller; balance lookups only return accounts you own                           |
+| Duplicate requests   | Unique index on `idempotencyKey` plus an explicit lookup before processing                                                           |
+| Data integrity       | Transaction record and both ledger entries are written in a single MongoDB session                                                   |
+| Ledger tampering     | Immutable fields and pre-hooks on every update and delete operation                                                                  |
+| Input validation     | Required-field checks, email regex, password minimum length, schema-level `min: 0` on amounts, account status checks, balance checks |
+| Secrets              | Loaded from environment variables; `.env` is git-ignored                                                                             |
 
 ---
 
@@ -508,16 +513,16 @@ Copy the example file and fill in your values:
 cp .env.example .env
 ```
 
-| Variable | Description |
-|---|---|
-| `MONGO_URI` | Atlas connection string including a database name, for example `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/ledger?retryWrites=true&w=majority` |
-| `JWT_SECRET` | A long random string used to sign tokens |
-| `EMAIL_USER` | The Gmail address that sends emails |
-| `CLIENT_ID` | Google OAuth client ID |
-| `CLIENT_SECRET` | Google OAuth client secret |
-| `REFRESH_TOKEN` | Google OAuth refresh token for the Gmail account |
-| `SYSTEM_USER_PASSWORD` | Password for the one-time system user script |
-| `PORT` | Optional. Defaults to 3000 (Render sets this automatically) |
+| Variable               | Description                                                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MONGO_URI`            | Atlas connection string including a database name, for example `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/ledger?retryWrites=true&w=majority` |
+| `JWT_SECRET`           | A long random string used to sign tokens                                                                                                                  |
+| `EMAIL_USER`           | The Gmail address that sends emails                                                                                                                       |
+| `CLIENT_ID`            | Google OAuth client ID                                                                                                                                    |
+| `CLIENT_SECRET`        | Google OAuth client secret                                                                                                                                |
+| `REFRESH_TOKEN`        | Google OAuth refresh token for the Gmail account                                                                                                          |
+| `SYSTEM_USER_PASSWORD` | Password for the one-time system user script                                                                                                              |
+| `PORT`                 | Optional. Defaults to 3000 (Render sets this automatically)                                                                                               |
 
 Generate a strong secret with:
 
@@ -559,11 +564,13 @@ You should see `Server is running on port: 3000` and a database connection messa
 The API is deployed on **Render** and the database on **MongoDB Atlas**.
 
 **Atlas**
+
 - Create a free M0 cluster and a database user
 - Network Access: allow `0.0.0.0/0` (Render's outbound IPs change)
 - Use the connection string with a database name in `MONGO_URI`
 
 **Render**
+
 - New Web Service connected to the GitHub repository, branch `main`
 - Build command: `npm install`
 - Start command: `npm start`
@@ -571,6 +578,7 @@ The API is deployed on **Render** and the database on **MongoDB Atlas**.
 - Auto-deploy is on, so every push to `main` redeploys
 
 **Free-tier notes**
+
 - The instance spins down after inactivity, so the first request can take 50 seconds or more.
 - Render's free tier blocks outbound SMTP ports (25, 465 and 587), so **email delivery may not work from the hosted demo**. Emails were verified in local runs. Emails are sent in the background, so a failed email never affects a transfer.
 
@@ -586,21 +594,21 @@ A Postman collection is included in [`postman/`](postman/). Import it, set the `
 
 ### Manual test checklist
 
-| # | Scenario | Expected result |
-|---|---|---|
-| 1 | Register a new user | `201` with user and token |
-| 2 | Register the same email again | `422` user already exists |
-| 3 | Create an account | `201` with the account |
-| 4 | Fund an account as the system user | `201` initial funds completed |
-| 5 | Normal user calls initial funds | `403` not a system user |
-| 6 | Get balance after funding | Balance equals the funded amount |
-| 7 | Transfer with enough balance | `201`, both balances change, ledger has a DEBIT and a CREDIT |
-| 8 | Transfer more than the balance | `400` insufficient balance |
-| 9 | Send the same transfer twice with the same key | Second call returns `200` already processed, balances unchanged |
-| 10 | Transfer from another user's account | Rejected, no ledger entries created |
-| 11 | Get balance of another user's account | `404` account not found |
-| 12 | Call a protected route without a token | `401` |
-| 13 | Log out, then reuse the token | `401` token is blacklisted |
+| #   | Scenario                                       | Expected result                                                 |
+| --- | ---------------------------------------------- | --------------------------------------------------------------- |
+| 1   | Register a new user                            | `201` with user and token                                       |
+| 2   | Register the same email again                  | `422` user already exists                                       |
+| 3   | Create an account                              | `201` with the account                                          |
+| 4   | Fund an account as the system user             | `201` initial funds completed                                   |
+| 5   | Normal user calls initial funds                | `403` not a system user                                         |
+| 6   | Get balance after funding                      | Balance equals the funded amount                                |
+| 7   | Transfer with enough balance                   | `201`, both balances change, ledger has a DEBIT and a CREDIT    |
+| 8   | Transfer more than the balance                 | `400` insufficient balance                                      |
+| 9   | Send the same transfer twice with the same key | Second call returns `200` already processed, balances unchanged |
+| 10  | Transfer from another user's account           | Rejected, no ledger entries created                             |
+| 11  | Get balance of another user's account          | `404` account not found                                         |
+| 12  | Call a protected route without a token         | `401`                                                           |
+| 13  | Log out, then reuse the token                  | `401` token is blacklisted                                      |
 
 ---
 
@@ -667,14 +675,6 @@ I built the base of this project by following a Backend Ledger tutorial, then ex
 - Documented the API, data model and design decisions, and added a Postman collection
 
 **What I learned:** double-entry ledger design, why balances should be derived, idempotent API design, MongoDB transactions and replica-set requirements, TTL indexes, aggregation with `$match`, `$group` and `$cond`, JWT logout strategies, and the difference between authentication and authorization (the ownership bug was a good reminder).
-
----
-
-## Acknowledgements
-
-The project is based on the **Backend Ledger** tutorial by [Sheryians Coding School](https://www.youtube.com/@sheryians) on YouTube. The core flow (ledger, idempotency, sessions, system user, email notifications) follows that tutorial; the fixes, deployment and documentation listed above are my own additions.
-
----
 
 ## Author
 
